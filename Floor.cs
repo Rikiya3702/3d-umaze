@@ -21,6 +21,10 @@ public class Floor : MonoBehaviour
   string startName = "Start";
   Dictionary<string, int[]> objPositions = new Dictionary<string, int[]>();
 
+  Camera birdEye;
+  Camera playersEye;
+  public bool start_bird_view;
+
   void Start() {
     floor = GetComponent<Transform>();
 
@@ -82,6 +86,18 @@ public class Floor : MonoBehaviour
         return true;
       }
     );
+
+    //Camera
+    birdEye = GameObject.FindWithTag("MainCamera").GetComponent<Camera>();
+    birdEye.enabled = false;
+    playersEye = player.GetComponent<Transform>().Find("Camera").GetComponent<Camera>();
+    playersEye.enabled = true;
+
+    SetPlayerActionType();
+    if( start_bird_view == true)
+    {
+      ChangeCamera();
+    }
   }
 
   public void UpdateObjPosition( string name, Vector3 pos, Quaternion rot) {
@@ -91,22 +107,37 @@ public class Floor : MonoBehaviour
 
   void Update()
   {
-    int i = Enumerable.Range(1, 2).FirstOrDefault( v => Input.GetMouseButtonDown( v - 1));
-    if( i != 0) {
-      Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+    if( birdEye.enabled )
+    {
+      int i = Enumerable.Range(1, 2).FirstOrDefault( v => Input.GetMouseButtonDown( v - 1));
+      if( i != 0) {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-      RaycastHit hit = new RaycastHit();
-      if( Physics.Raycast( ray.origin, ray.direction, out hit, Mathf.Infinity)){
-        Blocks.BlockObj target = blocks.Find(hit.collider.gameObject);
-        if( i == 2 && target != null) {
-          blocks.RemoveBlock(target);
-        }
-        else if( i == 1 && gameObject == hit.collider.gameObject) {
-          int[] index = blocks.GetBlockIndexXZ( hit.point );
-          blocks.CreateBlock( index[0], index[1]);
+        RaycastHit hit = new RaycastHit();
+        if( Physics.Raycast( ray.origin, ray.direction, out hit, Mathf.Infinity)){
+          Blocks.BlockObj target = blocks.Find(hit.collider.gameObject);
+          if( i == 2 && target != null) {
+            blocks.RemoveBlock(target);
+          }
+          else if( i == 1 && gameObject == hit.collider.gameObject) {
+            int[] index = blocks.GetBlockIndexXZ( hit.point );
+            blocks.CreateBlock( index[0], index[1]);
+          }
         }
       }
     }
-
   }
+
+  void SetPlayerActionType()
+  {
+    player.GetComponent<PlayerCellController>().ActionType = birdEye.enabled ? 0 : 1;
+  }
+
+  public void ChangeCamera()
+  {
+    birdEye.enabled = !birdEye.enabled;
+    playersEye.enabled = !playersEye.enabled;
+    SetPlayerActionType();
+  }
+
 }

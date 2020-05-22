@@ -35,7 +35,6 @@ public class PlayerCellController : MonoBehaviour
 
   void Start()
   {
-    ActionType = 1;
     floor = GameObject.Find("Floor").GetComponent<Floor>();
     pmotion = GetComponent<PlayerMotion>();
   }
