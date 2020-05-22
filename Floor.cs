@@ -32,6 +32,30 @@ public class Floor : MonoBehaviour
         new Vector3(floor.localScale.x / dx, 1f, floor.localScale.z / dz);
       blocks = new Blocks(blockPreb, floor, dx, dz, "map");
       blocks.Init(objPositions);
+
+      //Goal
+      GameObject goal = GameObject.Find(goalName);
+      goal.name = goalName;
+      goal.GetComponent<Transform>().position = blocks.GetBlockPosition( objPositions[goalName][0], objPositions[goalName][1] );
+
+      //Walls
+      Vector3 scale = blockPreb.GetComponent<Transform>().localScale;
+      for( int angle = 0; angle < 360; angle += 90 ) {
+        float x = Mathf.Cos(Mathf.Deg2Rad * angle);
+        float z = Mathf.Sin(Mathf.Deg2Rad * angle);
+
+        blockPreb.GetComponent<Transform>().localScale = new Vector3(
+          Mathf.RoundToInt(z * 10) == 0 ? 0.01f : floor.localScale.x,
+          scale.y / 2f,
+          Mathf.RoundToInt(x * 10) == 0 ? 0.01f : floor.localScale.z
+          );
+
+        float px = x * floor.localScale.x / 2f;
+        float pz = z * floor.localScale.z / 2f;
+        float py = floor.localScale.y / 2f + floor.position.y + scale.y / 2f;
+        Instantiate( blockPreb, new Vector3(px, py, pz), Quaternion.identity );
+      }
+      blockPreb.GetComponent<Transform>().localScale = scale;
     }
 
     void Update()
