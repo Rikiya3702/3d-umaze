@@ -44,7 +44,18 @@ public class Blocks {
   }
 
   public void Init( Dictionary<string, int[]> objPositions) {
+    int[] mapv = PlayerPrefs.GetString(prefsName).Split(',').Where( s => s.Length != 0 ).Select( s => int.Parse(s)).ToArray();
+    foreach( var item in blocks.Select( ( v, i ) => new { v, i } )) {
+      int x = i2x(item.i);
+      int z = i2z(item.i);
 
+      bool b0 = objPositions.Any( i => i.Value[0] == x && i.Value[1] == z ) == false;
+      bool b1 = b0 && ( item.i < mapv.Length ? mapv[item.i] == -1 : false );
+      if(b1) {
+        CreateBlock( x, z );
+      }
+
+    }
   }
 
   public int i2x( int i) {
@@ -83,7 +94,7 @@ public class Blocks {
       UnityEngine.Object.Instantiate(prefab, GetBlockPosition(x, z), Quaternion.identity);
     remap = true;
     if( save ) {
-      // SavePrefs();
+      SavePrefs();
     }
   }
 
@@ -106,7 +117,38 @@ public class Blocks {
     obj.Block = null;
     remap = true;
     if( save ) {
-      // SavePrefs();
+      SavePrefs();
     }
   }
+
+  public void SavePrefs() {
+    GetMap();
+    PlayerPrefs.SetString(prefsName, string.Join(",", map.Select( x => x.ToString()).ToArray()) );
+    PlayerPrefs.Save();
+  }
+  public void DeletePrefs() {
+    PlayerPrefs.DeleteKey(prefsName);
+  }
+
+  public int[] GetMap() {
+    if(remap) {
+      foreach(var item in blocks.Select( (v, i) => new { v, i } )){
+        map[ xz2i(item.v.X, item.v.Z) ] = item.v.Block == null ? 1 : -1 ;
+      }
+      remap = false;
+    }
+    return map;
+  }
+
+  public bool All( System.Func<int, int, bool> f ) {
+    return blocks.Select( (v, i) => new { v, i }).All(item => { return f( i2x(item.i), i2z(item.i) ); });
+  }
+  public bool IsIn(int x, int z) {
+    return x >= 0 && x < width && z >= 0 && z < height;
+  }
+  public bool IsWall(int x, int z) {
+    GetMap();
+    return IsIn(x, z) == false || map[ xz2i(x, z) ] == -1;
+  }
+
 }
