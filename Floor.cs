@@ -1,5 +1,7 @@
+﻿using System;
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Floor : MonoBehaviour
@@ -20,23 +22,23 @@ public class Floor : MonoBehaviour
       floor = GetComponent<Transform>();
 
       // Object start position
-      objPositions[playerName] = new int[] [ 0, 0 ];
-      objPositions[startName] = new int[]  [0, 0 ];
-      objPositions[goalName] = new int[]  [dx - 1, dz - 1 ];
-      objPositions[enemyName] = new int[]  [Mathf.RoundToInt(dx / 2), Mathf.RoundToInt(dz / 2) ];
+      objPositions[playerName] = new int[] { 0, 0 };
+      objPositions[startName] = new int[]  { 0, 0 };
+      objPositions[goalName] = new int[] { dx - 1, dz - 1 };
+      objPositions[enemyName] = new int[] { Mathf.RoundToInt(dx / 2), Mathf.RoundToInt(dz / 2) };
 
       //Blocks
       blockPreb.GetComponent<Transform>().localScale =
-        newVector3(floor.localScale.x / dx, 1f, floor.localScale.z / dz);
+        new Vector3(floor.localScale.x / dx, 1f, floor.localScale.z / dz);
       blocks = new Blocks(blockPreb, floor, dx, dz, "map");
       blocks.Init(objPositions);
     }
 
     void Update()
     {
-      int i = Enumerable.Range(1, 2).FirstOrDefalut( v => Input.GetMouseButtonDown( v - 1));
+      int i = Enumerable.Range(1, 2).FirstOrDefault( v => Input.GetMouseButtonDown( v - 1));
       if( i != 0) {
-        Ray ray = Camera.main.ScenePointToRay(Input.mousePosition);
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
         RaycastHit hit = new RaycastHit();
         if( Physics.Raycast( ray.origin, ray.direction, out hit, Mathf.Infinity)){
