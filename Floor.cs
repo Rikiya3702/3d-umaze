@@ -74,10 +74,10 @@ public class Floor : MonoBehaviour
 
         if(item.v == playerName) {
           player = obj;
-          // crtl.AutoMovingSpan = 0f;
+          crtl.AutoMovingSpan = 0f;
         }else if(item.v == enemyName) {
-          // crtl.AutoMovingSpan = 5f;
-          // ctrl.SetColor( new Color32(165, 35, 86, 255) );
+          crtl.AutoMovingSpan = 5f;
+          ctrl.SetColor( new Color32(165, 35, 86, 255) );
         }
         return true;
       }
