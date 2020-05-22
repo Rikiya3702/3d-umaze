@@ -1,3 +1,4 @@
+﻿using System;
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -34,7 +35,7 @@ public class PlayerCellController : MonoBehaviour
 
   void Start()
   {
-    ActionTyoe = 0;
+    ActionType = 1;
     floor = GameObject.Find("Floor").GetComponent<Floor>();
     pmotion = GetComponent<PlayerMotion>();
   }
@@ -76,5 +77,83 @@ public class PlayerCellController : MonoBehaviour
   public void SetColor( Color32 col)
   {
     GetComponent<Transform>().Find("Body").GetComponent<Renderer>().material.color = col;
+  }
+
+  public void Move( int[] pos, Action aniComplete = null )
+  {
+    pmotion.Unset();
+    if( pos[0] != 0 || pos[1] != 0 )
+    {
+      Vector3 d = new Vector3( pos[0], 0, pos[1] );
+
+      if( pos[3] == 1)
+      {
+        Quaternion q = new Quaternion();
+        q.SetFromToRotation( Vector3.forward, new Vector3(pos[0], 0, pos[1]) );
+        int y = Mathf.RoundToInt( (q.eulerAngles.y - GetComponent<Transform>().eulerAngles.y) ) % 360;
+        if( y != 0 )
+        {
+          Turn( NormalizedDegree(y), null );
+        }
+      }
+      else
+      {
+        d = GetComponent<Transform>().localRotation * d;
+      }
+      int[] index = floor.blocks.GetBlockIndexXZ( GetComponent<Transform>().position );
+      Forward( index[0] + Mathf.RoundToInt(d.x), index[1] + Mathf.RoundToInt(d.z), aniComplete);
+    }
+
+    if( pos[2] != 0 )
+    {
+      Turn( pos[2], aniComplete);
+    }
+  }
+
+  void Forward( int x, int z, Action aniComplete)
+  {
+    if( floor.blocks.IsWall( x, z ) == false)
+    {
+      Vector3 pos0 = GetComponent<Transform>().position;
+      Vector3 pos1 = floor.blocks.GetBlockPosition( x, z );
+      pos1.y = pos0.y;
+      pmotion.Add( p =>
+        {
+          GetComponent<Transform>().position = (pos1 - pos0) * p + pos0;
+        }, 0.5f, aniComplete );
+    }
+  }
+
+  void Turn( float deg, Action aniComplete)
+  {
+    float deg0 = GetComponent<Transform>().eulerAngles.y;
+    float deg1 = RoundDegree( deg0 + deg );
+    pmotion.Add( p =>
+      {
+        GetComponent<Transform>().rotation = Quaternion.Euler(0f, (deg1 - deg0) * p + deg0, 0f);
+      }, 0.5f, aniComplete );
+  }
+
+  float NormalizedDegree(float deg)
+  {
+    while( deg >= 180 )
+    {
+      deg -= 360;
+    }
+    while( deg < -180 )
+    {
+      deg += 360;
+    }
+    return deg;
+  }
+
+  float RoundDegree(float deg)
+  {
+    return Mathf.FloorToInt( (deg + 45) / 90) * 90;
+  }
+
+  public void CancelMotions()
+  {
+    pmotion.Cancel();
   }
 }
