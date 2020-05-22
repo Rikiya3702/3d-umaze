@@ -34,6 +34,22 @@ public class Floor : MonoBehaviour
 
     void Update()
     {
+      int i = Enumerable.Range(1, 2).FirstOrDefalut( v => Input.GetMouseButtonDown( v - 1));
+      if( i != 0) {
+        Ray ray = Camera.main.ScenePointToRay(Input.mousePosition);
+
+        RaycastHit hit = new RaycastHit();
+        if( Physics.Raycast( ray.origin, ray.direction, out hit, Mathf.Infinity)){
+          Blocks.BlockObj target = blocks.Find(hit.collider.gameObject);
+          if( i == 2 && target != null) {
+            blocks.RemoveBlock(target);
+          }
+          else if( i == 1 && gameObject == hit.collider.gameObject) {
+            int[] index = blocks.GetBlockIndexXZ( hit.point );
+            blocks.CreateBlock( index[0], index[1]);
+          }
+        }
+      }
 
     }
 }
