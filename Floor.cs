@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Floor : MonoBehaviour
 {
@@ -24,6 +25,9 @@ public class Floor : MonoBehaviour
   Camera birdEye;
   Camera playersEye;
   public bool start_bird_view;
+
+  GameObject timerText;
+  float timer = 0;
 
   void Start() {
     floor = GetComponent<Transform>();
@@ -79,6 +83,16 @@ public class Floor : MonoBehaviour
         if(item.v == playerName) {
           player = obj;
           ctrl.AutoMovingSpan = 0f;
+
+          ctrl.AddTriggerAction(goalName, () =>
+            {
+              ctrl.CancelMotions();
+              timer = 0.0f;
+
+              transform.position = blocks.GetBlockPosition( objPositions[startName][0], objPositions[startName][1]);
+              transform.localRotation = Quaternion.identity;
+            });
+
         }else if(item.v == enemyName) {
           ctrl.AutoMovingSpan = 5f;
           ctrl.SetColor( new Color32(165, 35, 86, 255) );
@@ -98,6 +112,9 @@ public class Floor : MonoBehaviour
     {
       ChangeCamera();
     }
+
+    //Timer
+    timerText = GameObject.Find("TimerText");
   }
 
   public void UpdateObjPosition( string name, Vector3 pos, Quaternion rot) {
@@ -126,6 +143,9 @@ public class Floor : MonoBehaviour
         }
       }
     }
+
+    timer += Time.deltaTime;
+    timerText.GetComponent<Text>().text = timer.ToString("0.0");
   }
 
   void SetPlayerActionType()

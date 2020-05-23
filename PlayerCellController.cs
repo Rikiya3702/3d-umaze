@@ -33,6 +33,19 @@ public class PlayerCellController : MonoBehaviour
   float autoMovedTime = 0f;
   float autoMovingSpeed = 1.0f;
 
+  Dictionary<string, Action> triggerActions = new Dictionary<string, Action>();
+  public void AddTriggerAction( string opponent, Action a)
+  {
+    triggerActions[opponent] = a;
+  }
+  private void OnTriggerEnter( Collider other )
+  {
+    if( triggerActions.ContainsKey(other.name) )
+    {
+      triggerActions[other.name]();
+    }
+  }
+
   void Start()
   {
     floor = GameObject.Find("Floor").GetComponent<Floor>();
