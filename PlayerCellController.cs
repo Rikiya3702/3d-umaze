@@ -29,6 +29,8 @@ public class PlayerCellController : MonoBehaviour
   Floor floor;
   PlayerMotion pmotion;
 
+  ModalDialog dlg;
+
   public float AutoMovingSpan { get; set; }
   float autoMovedTime = 0f;
   float autoMovingSpeed = 1.0f;
@@ -50,10 +52,16 @@ public class PlayerCellController : MonoBehaviour
   {
     floor = GameObject.Find("Floor").GetComponent<Floor>();
     pmotion = GetComponent<PlayerMotion>();
+    dlg = GameObject.Find("Canvas").GetComponent<ModalDialog>();
   }
 
   void Update()
   {
+    if( dlg.Active )
+    {
+      return;
+    }
+
     if( AutoMovingSpan == 0 )
     {
       foreach( var elem in actions )

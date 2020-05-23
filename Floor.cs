@@ -26,6 +26,8 @@ public class Floor : MonoBehaviour
   Camera playersEye;
   public bool start_bird_view;
 
+  ModalDialog dlg;
+
   GameObject timerText;
   float timer = 0;
 
@@ -101,6 +103,7 @@ public class Floor : MonoBehaviour
           ctrl.AddTriggerAction(goalName, () =>
             {
               ctrl.CancelMotions();
+              dlg.DoModal( name => {}, timer.ToString("0.0") );
               timer = 0.0f;
 
               transform.position = blocks.GetBlockPosition( objPositions[startName][0], objPositions[startName][1]);
@@ -139,6 +142,9 @@ public class Floor : MonoBehaviour
 
     //Timer
     timerText = GameObject.Find("TimerText");
+
+    //Modal
+    dlg = GameObject.Find("Canvas").GetComponent<ModalDialog>();
   }
 
   public void UpdateObjPosition( string name, Vector3 pos, Quaternion rot) {
@@ -148,6 +154,11 @@ public class Floor : MonoBehaviour
 
   void Update()
   {
+    if( dlg.Active )
+    {
+      return;
+    }
+
     if( birdEye.enabled )
     {
       int i = Enumerable.Range(1, 2).FirstOrDefault( v => Input.GetMouseButtonDown( v - 1));
