@@ -29,6 +29,20 @@ public class Floor : MonoBehaviour
   GameObject timerText;
   float timer = 0;
 
+  Coroutine timerColor = null;
+  IEnumerator TimerColor( Color c0, Color c1, float time)
+  {
+    int div = 10;
+    for( int cnt = 0; cnt < div; cnt++)
+    {
+      float r = (float)cnt / (div - 1);
+      Color c = c0 * (1 - r) + c1 * r;
+      timerText.GetComponent<Text>().color = c;
+      yield return new WaitForSeconds( time / div );
+    }
+    timerColor = null;
+  }
+
   void Start() {
     floor = GetComponent<Transform>();
 
@@ -57,7 +71,7 @@ public class Floor : MonoBehaviour
 
       blockPreb.GetComponent<Transform>().localScale = new Vector3(
         Mathf.RoundToInt(z * 10) == 0 ? 0.01f : floor.localScale.x,
-        scale.y / 2f,
+        scale.y,
         Mathf.RoundToInt(x * 10) == 0 ? 0.01f : floor.localScale.z
         );
 
@@ -91,6 +105,16 @@ public class Floor : MonoBehaviour
 
               transform.position = blocks.GetBlockPosition( objPositions[startName][0], objPositions[startName][1]);
               transform.localRotation = Quaternion.identity;
+            });
+          ctrl.AddTriggerAction(enemyName, () =>
+            {
+              timer += 5.0f;
+
+              if( timerColor != null)
+              {
+                StopCoroutine(timerColor);
+              }
+              timerColor = StartCoroutine( TimerColor(Color.red, Color.black, 5f) );
             });
 
         }else if(item.v == enemyName) {
