@@ -35,6 +35,13 @@ public class PlayerCellController : MonoBehaviour
   float autoMovedTime = 0f;
   float autoMovingSpeed = 1.0f;
 
+  public AudioClip audio_walk;
+  public AudioClip audio_turn;
+  public AudioClip audio_hitwall;
+  public float volume = 0.07f;
+  Dictionary<string, AudioClip> sounds;
+  AudioSource audio_source;
+
   Dictionary<string, Action> triggerActions = new Dictionary<string, Action>();
   public void AddTriggerAction( string opponent, Action a)
   {
@@ -53,6 +60,15 @@ public class PlayerCellController : MonoBehaviour
     floor = GameObject.Find("Floor").GetComponent<Floor>();
     pmotion = GetComponent<PlayerMotion>();
     dlg = GameObject.Find("Canvas").GetComponent<ModalDialog>();
+
+    audio_source = gameObject.AddComponent<AudioSource>();
+    sounds = new Dictionary<string, AudioClip>()
+    {
+      {"walk",     audio_walk },
+      {"turn",     audio_turn },
+      {"hitwall",  audio_hitwall }
+    };
+
   }
 
   void Update()
@@ -140,7 +156,11 @@ public class PlayerCellController : MonoBehaviour
       pmotion.Add( p =>
         {
           GetComponent<Transform>().position = (pos1 - pos0) * p + pos0;
-        }, 0.5f, aniComplete );
+        }, 0.5f, aniComplete, sounds["walk"], volume );
+    }
+    else
+    {
+      audio_source.PlayOneShot(sounds["hitwall"], volume);
     }
   }
 
@@ -151,7 +171,7 @@ public class PlayerCellController : MonoBehaviour
     pmotion.Add( p =>
       {
         GetComponent<Transform>().rotation = Quaternion.Euler(0f, (deg1 - deg0) * p + deg0, 0f);
-      }, 0.5f, aniComplete );
+      }, 0.5f, aniComplete, sounds["turn"], volume );
   }
 
   float NormalizedDegree(float deg)

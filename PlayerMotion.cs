@@ -10,12 +10,16 @@ public class PlayerMotion : MonoBehaviour
     public float Duration { get; set; }
     public Action Complete { get; set; }
     Action<float> animate;
+    public AudioClip Sound { get; set; }
+    public float Volume { get; set; }
 
-    public Animation( Action<float> a, float d, Action c = null )
+    public Animation( Action<float> a, float d, Action c = null, AudioClip sound = null, float volume = 0 )
     {
       this.animate = a;
       this.Duration = d;
       this.Complete = c;
+      this.Sound = sound;
+      this.Volume = volume;
     }
 
     public void Animate(float p)
@@ -31,9 +35,11 @@ public class PlayerMotion : MonoBehaviour
   List<Animation> animations = new List<Animation>();
   float started_time = 0;
 
-  public void Add( Action<float> animate, float duration, Action complete = null)
+  AudioSource audio_source;
+
+  public void Add( Action<float> animate, float duration, Action complete = null, AudioClip sound = null, float volume = 0)
   {
-    Add( new Animation(animate, duration, complete) );
+    Add( new Animation(animate, duration, complete, sound, volume) );
   }
   public void Add(Animation[] anis)
   {
@@ -65,6 +71,7 @@ public class PlayerMotion : MonoBehaviour
 
   void Start()
   {
+    audio_source = gameObject.AddComponent<AudioSource>();
   }
 
   void Update()
@@ -74,6 +81,10 @@ public class PlayerMotion : MonoBehaviour
       if( started_time == 0f)
       {
         started_time = Time.realtimeSinceStartup;
+        if( animations[0].Sound != null )
+        {
+          audio_source.PlayOneShot(animations[0].Sound, animations[0].Volume);
+        }
       }
       float progress = (Time.realtimeSinceStartup - started_time) / animations[0].Duration;
       animations[0].Animate( Mathf.Min(1f, progress) );

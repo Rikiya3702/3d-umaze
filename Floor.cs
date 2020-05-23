@@ -31,6 +31,22 @@ public class Floor : MonoBehaviour
   GameObject timerText;
   float timer = 0;
 
+  public AudioClip audio_bgm;
+  public AudioClip audio_bird;
+  public AudioClip audio_navi;
+  public AudioClip audio_warning;
+  public AudioClip audio_distance;
+  public float volume_bgm;
+  Dictionary<string, AudioClip> audio_bgms;
+  string currentBGM = "";
+  AudioSource audio_source_bgm;
+
+  public AudioClip audio_goal;
+  public AudioClip audio_break;
+  public AudioClip audio_damage;
+  public float volume_effects;
+  AudioSource audio_source_effects;
+
   Coroutine timerColor = null;
   IEnumerator TimerColor( Color c0, Color c1, float time)
   {
@@ -108,6 +124,8 @@ public class Floor : MonoBehaviour
 
               transform.position = blocks.GetBlockPosition( objPositions[startName][0], objPositions[startName][1]);
               transform.localRotation = Quaternion.identity;
+
+              audio_source_effects.PlayOneShot(audio_goal);
             });
           ctrl.AddTriggerAction(enemyName, () =>
             {
@@ -118,6 +136,8 @@ public class Floor : MonoBehaviour
                 StopCoroutine(timerColor);
               }
               timerColor = StartCoroutine( TimerColor(Color.red, Color.black, 5f) );
+
+              audio_source_effects.PlayOneShot(audio_damage);
             });
 
         }else if(item.v == enemyName) {
@@ -145,6 +165,23 @@ public class Floor : MonoBehaviour
 
     //Modal
     dlg = GameObject.Find("Canvas").GetComponent<ModalDialog>();
+
+    //Audio
+    audio_source_effects = gameObject.AddComponent<AudioSource>();
+    audio_source_effects.volume = volume_effects;
+    audio_source_bgm = gameObject.AddComponent<AudioSource>();
+    audio_source_bgm.volume = volume_bgm;
+    audio_source_bgm.loop = true;
+
+    audio_bgms = new Dictionary<string, AudioClip>()
+    {
+      {"Default", audio_bgm },
+      {"Bird",     audio_bird },
+      {"Navi",     audio_navi },
+      {"Warning",  audio_warning },
+      {"Distance", audio_distance }
+    };
+    BGM("Default");
   }
 
   public void UpdateObjPosition( string name, Vector3 pos, Quaternion rot) {
@@ -193,6 +230,21 @@ public class Floor : MonoBehaviour
     birdEye.enabled = !birdEye.enabled;
     playersEye.enabled = !playersEye.enabled;
     SetPlayerActionType();
+  }
+
+  public void BGM(string type)
+  {
+    if( audio_source_bgm.clip != audio_bgms[type])
+    {
+      currentBGM = type;
+      audio_source_bgm.clip = audio_bgms[type];
+      audio_source_bgm.Play();
+    }
+  }
+
+  public string BGM()
+  {
+    return currentBGM;
   }
 
 }
