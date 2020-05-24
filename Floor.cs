@@ -59,6 +59,8 @@ public class Floor : MonoBehaviour
   Dictionary<ItemNames, Item> items;
   int[] toBreakBlockXZ = new int[] { -1, -1};
   public GameObject itemBreakWall;
+  public GameObject textPrefab;
+  List<GameObject> distances = new List<GameObject>();
 
   Coroutine timerColor = null;
   IEnumerator TimerColor( Color c0, Color c1, float time)
@@ -203,6 +205,15 @@ public class Floor : MonoBehaviour
     routeRenderer = gameObject.AddComponent<RouteRenderer>();
 
     //Items
+    blocks.All( (x,y) => {
+      GameObject o = Instantiate(textPrefab, blocks.GetBlockPosition(x,y), Quaternion.Euler(90, 0, 0));
+      o.GetComponent<TextMesh>().text = Mathf.Sqrt(
+        Mathf.Pow(objPositions[goalName][0] - x, 2) + Mathf.Pow(objPositions[goalName][1] - y, 2) ).ToString("0.0");
+      o.SetActive(false);
+      distances.Add(o);
+      return true;
+    });
+
     items = new Dictionary<ItemNames, Item>()
     {
       {ItemNames.Bird, new Item(
@@ -227,7 +238,18 @@ public class Floor : MonoBehaviour
         },
         () => {
         }
-      )}
+      )},
+      {ItemNames.Distance, new Item(
+        5f,
+        () => {
+          BGM("Distance");
+          distances.ForEach( o => o.SetActive(true) );
+        },
+        () => {
+          BGM("Default");
+          distances.ForEach( o => o.SetActive(false) );
+        }
+      )},
     };
 
   }
@@ -310,6 +332,10 @@ public class Floor : MonoBehaviour
   public void ItemBreakWall()
   {
     doItem( ItemNames.BreakWall );
+  }
+  public void ItemDistance()
+  {
+    doItem( ItemNames.Distance );
   }
   void doItem( ItemNames name )
   {
