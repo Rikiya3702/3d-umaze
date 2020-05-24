@@ -150,5 +150,9 @@ public class Blocks {
     GetMap();
     return IsIn(x, z) == false || map[ xz2i(x, z) ] == -1;
   }
+  public List<int> Solve(int start, int end)
+  {
+    return Solver.Solve(GetMap(), width, start, end);
+  }
 
 }
