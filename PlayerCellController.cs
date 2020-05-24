@@ -149,16 +149,45 @@ public class PlayerCellController : MonoBehaviour
       pmotion.Unset();
 
       int[] pos = floor.blocks.GetBlockIndexXZ( GetComponent<Transform>().position );
-      List<string> avail = new List<string>();
-      foreach( var d in nextPosition )
+
+      bool moved = false;
+      while( nextNavigation.Count > 0 )
       {
-        if( floor.blocks.IsWall( pos[0] + d.Value[0], pos[1] + d.Value[1] ) == false )
+        int next = nextNavigation[0];
+        int x = floor.blocks.i2x(next);
+        int z = floor.blocks.i2z(next);
+        if( x - pos[0] != 0 || z - pos[1] != 0 )
         {
-          avail.Add(d.Key);
+          Move( new int[] { x - pos[0], z - pos[1], 0, 1 }, () =>
+          {
+            nextNavigation.RemoveAt(0);
+            if( nextNavigation.Count == 0 )
+            {
+              autoMovingSpeed = 1.0f;
+              routeRenderer.Clear();
+            }
+          });
+          moved = true;
+          break;
         }
-        if( avail.Count != 0 )
+        else
         {
-          Move( nextPosition[ avail[ UnityEngine.Random.Range( 0, avail.Count) ]] );
+          nextNavigation.RemoveAt(0);
+        }
+      }
+      if( moved == false )
+      {
+        List<string> avail = new List<string>();
+        foreach( var d in nextPosition )
+        {
+          if( floor.blocks.IsWall( pos[0] + d.Value[0], pos[1] + d.Value[1] ) == false )
+          {
+            avail.Add(d.Key);
+          }
+          if( avail.Count != 0 )
+          {
+            Move( nextPosition[ avail[ UnityEngine.Random.Range( 0, avail.Count) ]] );
+          }
         }
       }
     }
