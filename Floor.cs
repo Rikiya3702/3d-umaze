@@ -57,6 +57,8 @@ public class Floor : MonoBehaviour
     BreakWall
   }
   Dictionary<ItemNames, Item> items;
+  int[] toBreakBlockXZ = new int[] { -1, -1};
+  public GameObject itemBreakWall;
 
   Coroutine timerColor = null;
   IEnumerator TimerColor( Color c0, Color c1, float time)
@@ -213,6 +215,18 @@ public class Floor : MonoBehaviour
           BGM("Default");
           ChangeCamera();
         }
+      )},
+      {ItemNames.BreakWall, new Item(
+        0f,
+        () => {
+          if(toBreakBlockXZ[0] != -1)
+          {
+            audio_source_effects.PlayOneShot(audio_break);
+            blocks.RemoveBlock(toBreakBlockXZ[0], toBreakBlockXZ[1], false);
+          }
+        },
+        () => {
+        }
       )}
     };
 
@@ -220,7 +234,19 @@ public class Floor : MonoBehaviour
 
   public void UpdateObjPosition( string name, Vector3 pos, Quaternion rot) {
     int [] index = blocks.GetBlockIndexXZ(pos);
+
+    if( name == playerName)
+    {
+      int nx = index[0] + Mathf.RoundToInt( (rot * Vector3.forward).x );
+      int nz = index[1] + Mathf.RoundToInt( (rot * Vector3.forward).z );
+      bool enable = blocks.IsIn( nx, nz ) && blocks.IsWall( nx, nz );
+      itemBreakWall.GetComponent<Button>().interactable = enable;
+      toBreakBlockXZ[0] = enable ? nx : -1;
+      toBreakBlockXZ[1] = enable ? nz : -1;
+    }
+
     objPositions[name] = index;
+
   }
 
   void Update()
@@ -281,7 +307,10 @@ public class Floor : MonoBehaviour
   {
     doItem( ItemNames.Bird );
   }
-
+  public void ItemBreakWall()
+  {
+    doItem( ItemNames.BreakWall );
+  }
   void doItem( ItemNames name )
   {
     foreach( var item in items )
