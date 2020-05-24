@@ -48,6 +48,10 @@ public class PlayerCellController : MonoBehaviour
   LineRenderer radarLine;
   public Material line_material;
 
+  List<int> nextNavigation = new List<int>();
+  Color32 defaultColor;
+  RouteRenderer routeRenderer;
+
   Dictionary<string, Action> triggerActions = new Dictionary<string, Action>();
   public void AddTriggerAction( string opponent, Action a)
   {
@@ -81,6 +85,9 @@ public class PlayerCellController : MonoBehaviour
     radarLine.endColor = radarLine.startColor;
     radarLine.startWidth = 0.1f;
     radarLine.endWidth = 0.1f;
+
+    defaultColor = GetComponent<Transform>().Find("Body").GetComponent<Renderer>().material.color;
+    routeRenderer = gameObject.AddComponent<RouteRenderer>();
   }
 
   void Update()
@@ -97,6 +104,33 @@ public class PlayerCellController : MonoBehaviour
       ViewRadar( camera_angle, toCheckDistance, GetComponent<Transform>().position );
 
       int index = Search(camera_angle, toCheckDistance, GetComponent<Transform>().position, TrackingObject);
+      if( index == -1)
+      {
+        if( floor.BGM() == "Warning" )
+        {
+          floor.BGM("Default");
+        }
+        TrackingObject .GetComponent<PlayerCellController>().SetColor();
+      }
+      else
+      {
+        floor.BGM("Warning");
+        TrackingObject.GetComponent<PlayerCellController>()
+          .SetColor( new Color32(255, 0, 255, TrackingObject.GetComponent<PlayerCellController>().defaultColor.a) );
+        autoMovingSpeed = 5.0f;
+        if( nextNavigation.Count == 0 || nextNavigation[nextNavigation.Count -1 ] != index )
+        {
+          pmotion.Cancel();
+          autoMovedTime = Time.realtimeSinceStartup - AutoMovingSpan;
+          List<int> route = floor.blocks.Solve( floor.blocks.GetBlockIndex( GetComponent<Transform>().position), index);
+          nextNavigation.Clear();
+          for(int cnt = 0; cnt < route.Count; cnt++)
+          {
+            nextNavigation.Add( route[cnt] );
+          }
+          routeRenderer.Render( route, i => floor.blocks.GetBlockPosition(i), Color.red );
+        }
+      }
     }
 
     if( AutoMovingSpan == 0 )
@@ -131,7 +165,11 @@ public class PlayerCellController : MonoBehaviour
     floor.UpdateObjPosition( gameObject.name, GetComponent<Transform>().position, GetComponent<Transform>().rotation );
   }
 
-  public void SetColor( Color32 col)
+  public void SetColor()
+  {
+    SetColor( defaultColor );
+  }
+  public void SetColor( Color32 col )
   {
     GetComponent<Transform>().Find("Body").GetComponent<Renderer>().material.color = col;
   }
