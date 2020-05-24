@@ -47,6 +47,8 @@ public class Floor : MonoBehaviour
   public float volume_effects;
   AudioSource audio_source_effects;
 
+  RouteRenderer routeRenderer;
+
   Coroutine timerColor = null;
   IEnumerator TimerColor( Color c0, Color c1, float time)
   {
@@ -182,6 +184,8 @@ public class Floor : MonoBehaviour
       {"Distance", audio_distance }
     };
     BGM("Default");
+
+    routeRenderer = gameObject.AddComponent<RouteRenderer>();
   }
 
   public void UpdateObjPosition( string name, Vector3 pos, Quaternion rot) {
@@ -195,6 +199,9 @@ public class Floor : MonoBehaviour
     {
       return;
     }
+
+    List<int> route = blocks.Solve( blocks.xz2i(objPositions[playerName]), blocks.xz2i(objPositions[goalName]) );
+    routeRenderer.Render( route, i => blocks.GetBlockPosition(i) );
 
     if( birdEye.enabled )
     {
