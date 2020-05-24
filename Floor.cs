@@ -49,6 +49,15 @@ public class Floor : MonoBehaviour
 
   RouteRenderer routeRenderer;
 
+  enum ItemNames
+  {
+    Bird,
+    Navi,
+    Distance,
+    BreakWall
+  }
+  Dictionary<ItemNames, Item> items;
+
   Coroutine timerColor = null;
   IEnumerator TimerColor( Color c0, Color c1, float time)
   {
@@ -229,6 +238,14 @@ public class Floor : MonoBehaviour
 
     timer += Time.deltaTime;
     timerText.GetComponent<Text>().text = timer.ToString("0.0");
+
+    foreach( var item in items)
+    {
+      if( false == item.Value.Next( Time.deltaTime) )
+      {
+        item.Value.End();
+      }
+    }
   }
 
   void SetPlayerActionType()
