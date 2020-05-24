@@ -199,6 +199,23 @@ public class Floor : MonoBehaviour
     BGM("Default");
 
     routeRenderer = gameObject.AddComponent<RouteRenderer>();
+
+    //Items
+    items = new Dictionary<ItemNames, Item>()
+    {
+      {ItemNames.Bird, new Item(
+        5f,
+        () => {
+          BGM("Bird");
+          ChangeCamera();
+        },
+        () => {
+          BGM("Default");
+          ChangeCamera();
+        }
+      )}
+    };
+
   }
 
   public void UpdateObjPosition( string name, Vector3 pos, Quaternion rot) {
@@ -253,11 +270,25 @@ public class Floor : MonoBehaviour
     player.GetComponent<PlayerCellController>().ActionType = birdEye.enabled ? 0 : 1;
   }
 
-  public void ChangeCamera()
+  void ChangeCamera()
   {
     birdEye.enabled = !birdEye.enabled;
     playersEye.enabled = !playersEye.enabled;
     SetPlayerActionType();
+  }
+
+  public void ItemChangeCamera()
+  {
+    doItem( ItemNames.Bird );
+  }
+
+  void doItem( ItemNames name )
+  {
+    foreach( var item in items )
+    {
+      item.Value.End();
+    }
+    items[name].Start();
   }
 
   public void BGM(string type)

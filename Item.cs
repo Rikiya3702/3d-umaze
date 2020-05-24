@@ -41,7 +41,7 @@ public class Item
   {
     this.next();
   }
-  this.restTime = Mathf.Max(this.restTime - deltaTime);
+  this.restTime = Mathf.Max(this.restTime - deltaTime, 0f);
   return this.restTime > 0;
   }
 }
