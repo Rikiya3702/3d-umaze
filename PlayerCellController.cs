@@ -1,7 +1,9 @@
 ﻿using System;
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerCellController : MonoBehaviour
 {
@@ -93,6 +95,8 @@ public class PlayerCellController : MonoBehaviour
       float camera_angle = 90f;
       float toCheckDistance = 6f;
       ViewRadar( camera_angle, toCheckDistance, GetComponent<Transform>().position );
+
+      int index = Search(camera_angle, toCheckDistance, GetComponent<Transform>().position, TrackingObject);
     }
 
     if( AutoMovingSpan == 0 )
@@ -232,5 +236,45 @@ public class PlayerCellController : MonoBehaviour
       Quaternion q = Quaternion.Euler( 0f, da * cnt - camera_angle / 2f, 0f );
       radarLine.SetPosition( cnt + 1, q * forward + p0 );
     }
+  }
+
+  int Search( float camera_angle, float toCheckDistance, Vector3 p0, Transform target )
+  {
+    float targetWidthRatio = 0.9f;
+    Vector3[] pts =
+    {
+      ( Vector3.Cross( Vector3.up, target.position - p0 )
+          .normalized * target.localScale.x * targetWidthRatio / 2f + target.position - p0
+      ).normalized,
+      ( Vector3.Cross( Vector3.up, p0 - target.position )
+          .normalized * target.localScale.x * targetWidthRatio / 2f + target.position - p0
+      ).normalized,
+    };
+
+    int index = -1;
+    if(
+      pts.Any( v => {
+        if( Mathf.Abs( Vector3.Angle(GetComponent<Transform>().localRotation * Vector3.forward, v)) <= camera_angle / 2f )
+        {
+          RaycastHit hit = new RaycastHit();
+          if( Physics.Raycast( p0, v, out hit, toCheckDistance) )
+          {
+            if( hit.collider.gameObject.name.StartsWith("Block") == false )
+            {
+              return true;
+            }
+          }
+        }
+        return false;
+      })
+    )
+    {
+      index = floor.blocks.GetBlockIndex( target.GetComponent<Transform>().position );
+    }
+    else
+    {
+      index = -1;
+    }
+    return index;
   }
 }
