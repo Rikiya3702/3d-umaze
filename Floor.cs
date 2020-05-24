@@ -145,6 +145,10 @@ public class Floor : MonoBehaviour
         }else if(item.v == enemyName) {
           ctrl.AutoMovingSpan = 5f;
           ctrl.SetColor( new Color32(165, 35, 86, 255) );
+
+          ctrl.SetLayer( LayerMask.NameToLayer("Ignore Raycast") );
+          ctrl.TrackingObject = player.GetComponent<Transform>();
+
         }
         return true;
       }

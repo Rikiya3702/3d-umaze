@@ -42,6 +42,10 @@ public class PlayerCellController : MonoBehaviour
   Dictionary<string, AudioClip> sounds;
   AudioSource audio_source;
 
+  public Transform TrackingObject { get; set; }
+  LineRenderer radarLine;
+  public Material line_material;
+
   Dictionary<string, Action> triggerActions = new Dictionary<string, Action>();
   public void AddTriggerAction( string opponent, Action a)
   {
@@ -69,6 +73,12 @@ public class PlayerCellController : MonoBehaviour
       {"hitwall",  audio_hitwall }
     };
 
+    radarLine = gameObject.AddComponent<LineRenderer>();
+    // radarLine.material = new Material(Shader.Find("Particles/Additive"));
+    radarLine.startColor = new Color32( 12, 220, 12, 128);
+    radarLine.endColor = radarLine.startColor;
+    radarLine.startWidth = 0.1f;
+    radarLine.endWidth = 0.1f;
   }
 
   void Update()
@@ -76,6 +86,13 @@ public class PlayerCellController : MonoBehaviour
     if( dlg.Active )
     {
       return;
+    }
+
+    if( TrackingObject != null )
+    {
+      float camera_angle = 90f;
+      float toCheckDistance = 6f;
+      ViewRadar( camera_angle, toCheckDistance, GetComponent<Transform>().position );
     }
 
     if( AutoMovingSpan == 0 )
@@ -195,5 +212,25 @@ public class PlayerCellController : MonoBehaviour
   public void CancelMotions()
   {
     pmotion.Cancel();
+  }
+
+  public void SetLayer(int layer)
+  {
+    gameObject.layer = layer;
+    GetComponent<Transform>().Find("Body").gameObject.layer = layer;
+  }
+  void ViewRadar(float camera_angle, float toCheckDistance, Vector3 p0)
+  {
+    float da = 2.0f;
+    radarLine.positionCount = Mathf.CeilToInt( camera_angle / da ) + 2;
+    radarLine.SetPosition( 0, p0 );
+    radarLine.SetPosition( radarLine.positionCount -1, p0 );
+    Vector3 forward = GetComponent<Transform>().localRotation * Vector3.forward * toCheckDistance;
+
+    for( int cnt = 0; cnt < radarLine.positionCount - 2; cnt++ )
+    {
+      Quaternion q = Quaternion.Euler( 0f, da * cnt - camera_angle / 2f, 0f );
+      radarLine.SetPosition( cnt + 1, q * forward + p0 );
+    }
   }
 }
